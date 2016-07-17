@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2012-2014 Adobe Systems Incorporated. All rights reserved.
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+		
+        <title>navigation</title>
+    </head>
+    <body>
+        
+		<div id="googleMap" style="width:500px;height:380px;">
+		</div>
+		<br/>
+		<div class="row">
+			
+				
+				 <div class="col-xs-3">
+					<label>Origin</label><input type="text" id="origin" class="form-control" >
+				</div>
+			
+		
+			
+				 <div class="col-xs-3">
+						<label>Destination</label><input type="text" id="destination" class="form-control" >
+				</div>
+			
+		</div>
+		<br>
+		<button type="button" onclick="Navigate()" class="btn btn-primary">Start Navigation</button>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+		<script src="http://maps.googleapis.com/maps/api/js"></script>
+        <script type="text/javascript">
+            app.initialize();
+			var origin,destination;
+			var map;
+			function initialize() {
+					  var mapProp = {
+						center:new google.maps.LatLng(51.508742,-0.120850),
+						zoom:5,
+						mapTypeId:google.maps.MapTypeId.HYBRID
+					  };
+					   map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+					  var marker1, marker2;
+					   var poly, geodesicPoly;
+					  
+												
+					marker1 = new google.maps.Marker(
+							 {
+												  map: map,
+												  draggable: true,
+												  position: {lat: 12.97, lng: 77.59}
+							});	
+												
+											
+
+					 
+
+					marker2 = new google.maps.Marker(
+					{
+					  map: map,
+					  draggable: true,
+					  position: {lat: 12.971720704687922, lng: 74.97162890624998}
+					});
+					  var bounds = new google.maps.LatLngBounds(
+						marker1.getPosition(), marker2.getPosition());
+						map.fitBounds(bounds);
+						google.maps.event.addListener(marker1, 'dragend', updateMarker1);
+						google.maps.event.addListener(marker2, 'dragend', updateMarker2);
+						poly = new google.maps.Polyline({
+						  strokeColor: '#FF0000',
+						  strokeOpacity: 1.0,
+						  strokeWeight: 3,
+						  map: map,
+						});
+
+						geodesicPoly = new google.maps.Polyline({
+						  strokeColor: '#CC0099',
+						  strokeOpacity: 1.0,
+						  strokeWeight: 3,
+						  geodesic: true,
+						  map: map
+						});
+
+						updateMarker1();
+						updateMarker2();
+						
+						
+						
+						 function updateMarker1()
+						 {
+							var path = [marker1.getPosition(), marker2.getPosition()];
+							poly.setPath(path);
+							geodesicPoly.setPath(path);
+							
+							
+							document.getElementById('origin').value = path[0].toString();
+							//document.getElementById('destination').value = path[1].toString();
+							
+							
+															
+								var geocoder = new google.maps.Geocoder;
+							var infowindow = new google.maps.InfoWindow;
+							  geocodeLatLng(geocoder, map, infowindow);
+									 
+									 
+								function geocodeLatLng(geocoder, map, infowindow)
+								{
+
+										var input = path[0].toString().replace("(","").replace(")","");
+										var latlngStr = input.split(',', 2);
+										var latlng = {lat: parseFloat(latlngStr[0]), lng: parseFloat(latlngStr[1])};
+										geocoder.geocode({'location': latlng}, function(results, status) {
+										  if (status === google.maps.GeocoderStatus.OK) {
+											if (results[1]) {
+											document.getElementById('origin').value=results[1].formatted_address;
+											 /* map.setZoom(11);
+											  var marker = new google.maps.Marker({
+												position: latlng,
+												map: map
+											  });*/
+											 // infowindow.setContent(results[1].formatted_address);
+											 // infowindow.open(map, marker);
+											} 
+										  } 
+										});
+										
+																	
+								}
+								
+							
+							
+						  }
+						  function updateMarker2()
+						 {
+							var path = [marker1.getPosition(), marker2.getPosition()];
+							poly.setPath(path);
+							geodesicPoly.setPath(path);
+							
+							
+							//document.getElementById('origin').value = path[0].toString();
+							document.getElementById('destination').value = path[1].toString();
+							
+							
+															
+								var geocoder = new google.maps.Geocoder;
+							var infowindow = new google.maps.InfoWindow;
+							  geocodeLatLng(geocoder, map, infowindow);
+									 
+									 
+								function geocodeLatLng(geocoder, map, infowindow)
+								{
+																			
+										
+										var input = path[1].toString().replace("(","").replace(")","");
+										var latlngStr = input.split(',', 2);
+										var latlng = {lat: parseFloat(latlngStr[0]), lng: parseFloat(latlngStr[1])};
+										geocoder.geocode({'location': latlng}, function(results, status) {
+										  if (status === google.maps.GeocoderStatus.OK) {
+											if (results[1]) {
+											document.getElementById('destination').value=results[1].formatted_address;
+											 /* map.setZoom(11);
+											  var marker = new google.maps.Marker({
+												position: latlng,
+												map: map
+											  });*/
+											 // infowindow.setContent(results[1].formatted_address);
+											 // infowindow.open(map, marker);
+											} 
+										  } 
+										});
+
+								
+								}
+								
+							
+							
+						  }
+
+
+				}
+					google.maps.event.addDomListener(window, 'load', initialize);
+						function Navigate()
+						{
+							var directionsService = new google.maps.DirectionsService;
+							var directionsDisplay = new google.maps.DirectionsRenderer;
+							 directionsDisplay.setMap(map);
+								 directionsService.route({
+								  origin: document.getElementById('origin').value,
+								  destination: document.getElementById('destination').value,
+								  travelMode: google.maps.TravelMode.DRIVING
+								}, function(response, status) {
+								  if (status === google.maps.DirectionsStatus.OK) {
+									directionsDisplay.setDirections(response);
+								  } else {
+									window.alert('Directions request failed due to ' + status);
+								  }
+								});
+
+
+						}
+			
+
+        </script>
+    </body>
+</html>
